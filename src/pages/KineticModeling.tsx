@@ -3,17 +3,18 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import SectionHeader from '../components/shared/SectionHeader'
 import GlassCard from '../components/shared/GlassCard'
 import NeonButton from '../components/shared/NeonButton'
-import { generateArrheniusData, generateConversionData } from '../lib/data'
+import { generateArrheniusData, generateConversionData, REACTIONS } from '../lib/data'
 import { Beaker, Thermometer, Gauge, Zap, TrendingUp, FlaskConical } from 'lucide-react'
 
 export default function KineticModeling() {
-  const [temperature, setTemperature] = useState(150)
+  const [reactionIdx, setReactionIdx] = useState(0)
+  const [temperature, setTemperature] = useState(110)
   const [pressure, setPressure] = useState(5)
-  const [catalyst, setCatalyst] = useState('H₂SO₄')
-  const [scaleFactor, setScaleFactor] = useState(500)
+  const [residenceTime, setResidenceTime] = useState(120)
   const [isSimulating, setIsSimulating] = useState(false)
 
-  const arrheniusData = useMemo(() => generateArrheniusData(), [])
+  const rxn = REACTIONS[reactionIdx]
+  const arrheniusData = useMemo(() => generateArrheniusData(reactionIdx), [reactionIdx])
   const conversionData = useMemo(() => generateConversionData(), [])
 
   const handleSimulate = () => {
@@ -21,13 +22,28 @@ export default function KineticModeling() {
     setTimeout(() => setIsSimulating(false), 2000)
   }
 
-  const predictedYield = Math.min(98, 60 + temperature * 0.15 + pressure * 1.2 - (scaleFactor > 1000 ? 5 : 0)).toFixed(1)
-  const rateConstant = (1e12 * Math.exp(-75000 / (8.314 * (temperature + 273.15)))).toExponential(2)
+  const R = 8.314
+  const T_K = temperature + 273.15
+  const rateConstant = rxn.A * Math.exp(-rxn.Ea / (R * T_K))
+  const lnK = Math.log(Math.max(rateConstant, 1e-10))
+  const predictedConversion = (100 * (1 - Math.exp(-rateConstant * residenceTime * 60))).toFixed(1)
+
+  // Multi-scale comparison using real Arrhenius
+  const scaleComparison = REACTIONS.map(r => {
+    const k = r.A * Math.exp(-r.Ea / (R * T_K))
+    return {
+      reaction: r.shortName,
+      rateConstant: k.toExponential(3),
+      lnK: Math.log(Math.max(k, 1e-10)).toFixed(3),
+      Ea: `${(r.Ea / 1000).toFixed(0)} kJ/mol`,
+      A: r.A.toExponential(1),
+    }
+  })
 
   return (
     <main className="pt-20 pb-16 min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader subtitle="MODULE 1" title="AI Kinetic Modeling Engine" description="Upload lab-scale reaction data and predict optimal plant-scale conditions using AI-assisted Arrhenius modeling." align="left" />
+        <SectionHeader subtitle="MODULE 1" title="AI Kinetic Modeling Engine" description="Predict reaction kinetics using real Arrhenius parameters from 20,000 oleochemical data points." align="left" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Input Panel */}
@@ -39,31 +55,30 @@ export default function KineticModeling() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs text-riq-text-dim font-mono mb-1 block">Catalyst</label>
-                  <select value={catalyst} onChange={e => setCatalyst(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-riq-surface border border-riq-border text-sm text-white focus:border-riq-cyan/40 focus:outline-none transition">
-                    <option value="H₂SO₄">H₂SO₄ (Sulfuric Acid)</option>
-                    <option value="p-TSA">p-TSA (p-Toluenesulfonic)</option>
-                    <option value="Amberlyst">Amberlyst-15</option>
-                    <option value="Ti(OBu)₄">Ti(OBu)₄ (Titanium)</option>
+                  <label className="text-xs text-riq-text-dim font-mono mb-1 block">Reaction Type</label>
+                  <select value={reactionIdx} onChange={e => setReactionIdx(+e.target.value)} className="w-full px-3 py-2 rounded-lg bg-riq-surface border border-riq-border text-sm text-white focus:border-riq-cyan/40 focus:outline-none transition">
+                    {REACTIONS.map((r, i) => (
+                      <option key={i} value={i}>{r.name}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="text-xs text-riq-text-dim font-mono mb-1 flex items-center gap-1"><Thermometer size={12} /> Temperature (°C)</label>
-                  <input type="range" min={60} max={250} value={temperature} onChange={e => setTemperature(+e.target.value)} className="w-full accent-riq-cyan" />
-                  <div className="text-right text-xs text-riq-cyan font-mono">{temperature}°C</div>
+                  <input type="range" min={30} max={180} value={temperature} onChange={e => setTemperature(+e.target.value)} className="w-full accent-riq-cyan" />
+                  <div className="text-right text-xs text-riq-cyan font-mono">{temperature}°C ({T_K.toFixed(1)} K)</div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-riq-text-dim font-mono mb-1 flex items-center gap-1"><Gauge size={12} /> Pressure (atm)</label>
+                  <label className="text-xs text-riq-text-dim font-mono mb-1 flex items-center gap-1"><Gauge size={12} /> Pressure (bar)</label>
                   <input type="range" min={1} max={15} step={0.5} value={pressure} onChange={e => setPressure(+e.target.value)} className="w-full accent-riq-gold" />
-                  <div className="text-right text-xs text-riq-gold font-mono">{pressure} atm</div>
+                  <div className="text-right text-xs text-riq-gold font-mono">{pressure} bar</div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-riq-text-dim font-mono mb-1 flex items-center gap-1"><Beaker size={12} /> Scale (mL → kg)</label>
-                  <input type="range" min={500} max={5000} step={100} value={scaleFactor} onChange={e => setScaleFactor(+e.target.value)} className="w-full accent-riq-orange" />
-                  <div className="text-right text-xs text-riq-orange font-mono">{scaleFactor >= 1000 ? `${(scaleFactor / 1000).toFixed(1)} L` : `${scaleFactor} mL`} → {scaleFactor} kg</div>
+                  <label className="text-xs text-riq-text-dim font-mono mb-1 flex items-center gap-1"><Beaker size={12} /> Residence Time (min)</label>
+                  <input type="range" min={10} max={300} step={5} value={residenceTime} onChange={e => setResidenceTime(+e.target.value)} className="w-full accent-riq-orange" />
+                  <div className="text-right text-xs text-riq-orange font-mono">{residenceTime} min</div>
                 </div>
 
                 <NeonButton variant="cyan" size="md" onClick={handleSimulate} className="w-full" icon={<Zap size={16} />}>
@@ -72,39 +87,47 @@ export default function KineticModeling() {
               </div>
             </GlassCard>
 
-            {/* Quick stats */}
+            {/* Predictions */}
             <GlassCard variant="default" hover={false} className="!p-4">
-              <h4 className="text-xs font-mono text-riq-text-dim mb-3">PREDICTIONS</h4>
+              <h4 className="text-xs font-mono text-riq-text-dim mb-3">ML PREDICTIONS</h4>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Predicted Yield</span>
-                  <span className="text-sm font-bold text-riq-success">{predictedYield}%</span>
-                </div>
-                <div className="flex justify-between items-center">
                   <span className="text-xs text-riq-text-dim">Rate Constant k</span>
-                  <span className="text-xs font-mono text-riq-cyan">{rateConstant}</span>
+                  <span className="text-xs font-mono text-riq-cyan">{rateConstant.toExponential(3)} s⁻¹</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Scale Confidence</span>
-                  <span className="text-sm font-bold text-riq-gold">{scaleFactor < 2000 ? '94%' : '87%'}</span>
+                  <span className="text-xs text-riq-text-dim">ln(k)</span>
+                  <span className="text-xs font-mono text-riq-cyan">{lnK.toFixed(3)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Catalyst: {catalyst}</span>
-                  <span className="text-xs font-bold text-riq-success">Optimal</span>
+                  <span className="text-xs text-riq-text-dim">Predicted Conversion</span>
+                  <span className="text-sm font-bold text-riq-success">{predictedConversion}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-riq-text-dim">Ea</span>
+                  <span className="text-xs font-mono text-riq-gold">{(rxn.Ea / 1000).toFixed(0)} kJ/mol</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-riq-text-dim">A (Pre-exp)</span>
+                  <span className="text-xs font-mono text-riq-orange">{rxn.A.toExponential(2)} s⁻¹</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-riq-text-dim">Data Points</span>
+                  <span className="text-xs font-bold text-riq-success">4,000 per reaction</span>
                 </div>
               </div>
             </GlassCard>
           </div>
 
-          {/* Center & Right: Charts */}
+          {/* Charts */}
           <div className="lg:col-span-9 space-y-6">
             {/* Arrhenius Plot */}
             <GlassCard variant="default" hover={false} className="!p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <TrendingUp size={16} className="text-riq-cyan" /> Arrhenius Plot — ln(k) vs 1/T
+                  <TrendingUp size={16} className="text-riq-cyan" /> Arrhenius Plot — ln(k) vs 1000/T
                 </h3>
-                <span className="text-xs font-mono text-riq-text-dim">k = A·e^(-Eₐ/RT)</span>
+                <span className="text-xs font-mono text-riq-text-dim">k = {rxn.A.toExponential(1)}·e^(-{(rxn.Ea/1000).toFixed(0)}kJ/RT)</span>
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={arrheniusData.filter((_, i) => i % 2 === 0)}>
@@ -113,8 +136,8 @@ export default function KineticModeling() {
                   <YAxis stroke="#9e9e9e" tick={{ fontSize: 10 }} label={{ value: 'ln(k)', angle: -90, position: 'insideLeft', fill: '#9e9e9e', fontSize: 11 }} />
                   <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a45', borderRadius: 12, fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="lnK" name="Lab Scale" stroke="#00e5ff" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="lnKScaleUp" name="Scale-Up Predicted" stroke="#ffc107" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                  <Line type="monotone" dataKey="lnK" name={rxn.shortName} stroke={rxn.color} strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="lnKBase" name="Oleic Acid (baseline)" stroke="#ffffff40" strokeWidth={1} strokeDasharray="5 5" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </GlassCard>
@@ -153,33 +176,31 @@ export default function KineticModeling() {
               </GlassCard>
             </div>
 
-            {/* Scale-Up Comparison Table */}
+            {/* Multi-Reaction Comparison Table */}
             <GlassCard variant="default" hover={false} className="!p-5">
-              <h3 className="text-sm font-bold text-white mb-4">Multi-Scale Comparison</h3>
+              <h3 className="text-sm font-bold text-white mb-4">Multi-Reaction Arrhenius Comparison @ {temperature}°C</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-riq-border">
-                      <th className="text-left py-2 text-xs font-mono text-riq-text-dim">Parameter</th>
-                      <th className="text-center py-2 text-xs font-mono text-riq-cyan">Lab (500mL)</th>
-                      <th className="text-center py-2 text-xs font-mono text-riq-blue">Pilot (50L)</th>
-                      <th className="text-center py-2 text-xs font-mono text-riq-gold">Plant ({scaleFactor}kg)</th>
+                      <th className="text-left py-2 text-xs font-mono text-riq-text-dim">Reaction</th>
+                      <th className="text-center py-2 text-xs font-mono text-riq-cyan">k (s⁻¹)</th>
+                      <th className="text-center py-2 text-xs font-mono text-riq-blue">ln(k)</th>
+                      <th className="text-center py-2 text-xs font-mono text-riq-gold">Ea</th>
+                      <th className="text-center py-2 text-xs font-mono text-riq-orange">A (s⁻¹)</th>
                     </tr>
                   </thead>
                   <tbody className="text-riq-text-dim">
-                    {[
-                      ['Temperature', `${temperature}°C`, `${temperature + 2}°C`, `${temperature + 5}°C`],
-                      ['Pressure', `${pressure} atm`, `${pressure + 0.3} atm`, `${(pressure + 0.8).toFixed(1)} atm`],
-                      ['Conversion', '92.4%', '89.1%', `${predictedYield}%`],
-                      ['Reaction Time', '90 min', '95 min', '110 min'],
-                      ['Heat Transfer', '850 W/m²K', '720 W/m²K', '580 W/m²K'],
-                      ['Mixing Re', '12,000', '45,000', '180,000'],
-                    ].map(([param, ...vals], i) => (
-                      <tr key={i} className="border-b border-riq-border/50">
-                        <td className="py-2 font-medium text-white">{param}</td>
-                        {vals.map((v, j) => (
-                          <td key={j} className="py-2 text-center font-mono text-xs">{v}</td>
-                        ))}
+                    {scaleComparison.map((row, i) => (
+                      <tr key={i} className={`border-b border-riq-border/50 ${i === reactionIdx ? 'bg-riq-cyan/5' : ''}`}>
+                        <td className="py-2 font-medium text-white flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full" style={{ background: REACTIONS[i].color }} />
+                          {row.reaction}
+                        </td>
+                        <td className="py-2 text-center font-mono text-xs">{row.rateConstant}</td>
+                        <td className="py-2 text-center font-mono text-xs">{row.lnK}</td>
+                        <td className="py-2 text-center font-mono text-xs">{row.Ea}</td>
+                        <td className="py-2 text-center font-mono text-xs">{row.A}</td>
                       </tr>
                     ))}
                   </tbody>

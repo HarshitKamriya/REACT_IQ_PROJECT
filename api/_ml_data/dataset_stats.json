@@ -1,0 +1,92 @@
+{
+  "Oleic Acid + Methanol Esterific": {
+    "count": 4000,
+    "tempRange": [
+      30.0,
+      180.0
+    ],
+    "pressureRange": [
+      1.0,
+      15.0
+    ],
+    "conversionRange": [
+      35.1,
+      57.4
+    ],
+    "avgConversion": 43.39,
+    "scaleUpRate": 16.7,
+    "avgRateConstant": 0.5092
+  },
+  "Palmitic Acid + Ethanol Esterif": {
+    "count": 4000,
+    "tempRange": [
+      35.1,
+      199.9
+    ],
+    "pressureRange": [
+      1.0,
+      15.0
+    ],
+    "conversionRange": [
+      35.0,
+      59.0
+    ],
+    "avgConversion": 43.33,
+    "scaleUpRate": 17.4,
+    "avgRateConstant": 0.5343
+  },
+  "Lauric Acid + Butanol Esterific": {
+    "count": 4000,
+    "tempRange": [
+      25.0,
+      170.0
+    ],
+    "pressureRange": [
+      1.0,
+      15.0
+    ],
+    "conversionRange": [
+      35.0,
+      51.8
+    ],
+    "avgConversion": 41.47,
+    "scaleUpRate": 4.7,
+    "avgRateConstant": 0.1828
+  },
+  "Stearic Acid + Methanol Esterif": {
+    "count": 4000,
+    "tempRange": [
+      40.1,
+      219.9
+    ],
+    "pressureRange": [
+      1.0,
+      15.0
+    ],
+    "conversionRange": [
+      35.0,
+      56.4
+    ],
+    "avgConversion": 42.3,
+    "scaleUpRate": 11.3,
+    "avgRateConstant": 0.3315
+  },
+  "Biodiesel Transesterification (": {
+    "count": 4000,
+    "tempRange": [
+      20.0,
+      140.0
+    ],
+    "pressureRange": [
+      1.0,
+      15.0
+    ],
+    "conversionRange": [
+      35.0,
+      49.3
+    ],
+    "avgConversion": 41.13,
+    "scaleUpRate": 2.4,
+    "avgRateConstant": 0.1329
+  }
+}

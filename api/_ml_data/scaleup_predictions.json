@@ -1,0 +1,332 @@
+{
+  "Biodiesel Transesterification (": [
+    {
+      "temp": 30,
+      "successProb": 0.0
+    },
+    {
+      "temp": 40,
+      "successProb": 0.0
+    },
+    {
+      "temp": 50,
+      "successProb": 0.0
+    },
+    {
+      "temp": 60,
+      "successProb": 0.0
+    },
+    {
+      "temp": 70,
+      "successProb": 0.0
+    },
+    {
+      "temp": 80,
+      "successProb": 0.0
+    },
+    {
+      "temp": 90,
+      "successProb": 0.0
+    },
+    {
+      "temp": 100,
+      "successProb": 0.0
+    },
+    {
+      "temp": 110,
+      "successProb": 0.0
+    },
+    {
+      "temp": 120,
+      "successProb": 0.0
+    },
+    {
+      "temp": 130,
+      "successProb": 0.0
+    },
+    {
+      "temp": 140,
+      "successProb": 0.0
+    },
+    {
+      "temp": 150,
+      "successProb": 0.0
+    },
+    {
+      "temp": 160,
+      "successProb": 0.0
+    },
+    {
+      "temp": 170,
+      "successProb": 0.0
+    },
+    {
+      "temp": 180,
+      "successProb": 0.0
+    }
+  ],
+  "Lauric Acid + Butanol Esterific": [
+    {
+      "temp": 30,
+      "successProb": 0.0
+    },
+    {
+      "temp": 40,
+      "successProb": 0.0
+    },
+    {
+      "temp": 50,
+      "successProb": 0.0
+    },
+    {
+      "temp": 60,
+      "successProb": 0.0
+    },
+    {
+      "temp": 70,
+      "successProb": 0.0
+    },
+    {
+      "temp": 80,
+      "successProb": 0.0
+    },
+    {
+      "temp": 90,
+      "successProb": 0.0
+    },
+    {
+      "temp": 100,
+      "successProb": 0.0
+    },
+    {
+      "temp": 110,
+      "successProb": 0.0
+    },
+    {
+      "temp": 120,
+      "successProb": 0.0
+    },
+    {
+      "temp": 130,
+      "successProb": 0.0
+    },
+    {
+      "temp": 140,
+      "successProb": 0.0
+    },
+    {
+      "temp": 150,
+      "successProb": 0.0
+    },
+    {
+      "temp": 160,
+      "successProb": 0.0
+    },
+    {
+      "temp": 170,
+      "successProb": 0.0
+    },
+    {
+      "temp": 180,
+      "successProb": 0.0
+    }
+  ],
+  "Oleic Acid + Methanol Esterific": [
+    {
+      "temp": 30,
+      "successProb": 0.0
+    },
+    {
+      "temp": 40,
+      "successProb": 0.0
+    },
+    {
+      "temp": 50,
+      "successProb": 0.0
+    },
+    {
+      "temp": 60,
+      "successProb": 0.0
+    },
+    {
+      "temp": 70,
+      "successProb": 0.0
+    },
+    {
+      "temp": 80,
+      "successProb": 0.0
+    },
+    {
+      "temp": 90,
+      "successProb": 0.0
+    },
+    {
+      "temp": 100,
+      "successProb": 0.0
+    },
+    {
+      "temp": 110,
+      "successProb": 0.0
+    },
+    {
+      "temp": 120,
+      "successProb": 0.0
+    },
+    {
+      "temp": 130,
+      "successProb": 0.0
+    },
+    {
+      "temp": 140,
+      "successProb": 0.0
+    },
+    {
+      "temp": 150,
+      "successProb": 0.0
+    },
+    {
+      "temp": 160,
+      "successProb": 0.0
+    },
+    {
+      "temp": 170,
+      "successProb": 0.0
+    },
+    {
+      "temp": 180,
+      "successProb": 0.0
+    }
+  ],
+  "Palmitic Acid + Ethanol Esterif": [
+    {
+      "temp": 30,
+      "successProb": 0.0
+    },
+    {
+      "temp": 40,
+      "successProb": 0.0
+    },
+    {
+      "temp": 50,
+      "successProb": 0.0
+    },
+    {
+      "temp": 60,
+      "successProb": 0.0
+    },
+    {
+      "temp": 70,
+      "successProb": 0.0
+    },
+    {
+      "temp": 80,
+      "successProb": 0.0
+    },
+    {
+      "temp": 90,
+      "successProb": 0.0
+    },
+    {
+      "temp": 100,
+      "successProb": 0.0
+    },
+    {
+      "temp": 110,
+      "successProb": 0.0
+    },
+    {
+      "temp": 120,
+      "successProb": 0.0
+    },
+    {
+      "temp": 130,
+      "successProb": 0.0
+    },
+    {
+      "temp": 140,
+      "successProb": 0.0
+    },
+    {
+      "temp": 150,
+      "successProb": 0.0
+    },
+    {
+      "temp": 160,
+      "successProb": 0.0
+    },
+    {
+      "temp": 170,
+      "successProb": 0.0
+    },
+    {
+      "temp": 180,
+      "successProb": 0.0
+    }
+  ],
+  "Stearic Acid + Methanol Esterif": [
+    {
+      "temp": 30,
+      "successProb": 0.0
+    },
+    {
+      "temp": 40,
+      "successProb": 0.0
+    },
+    {
+      "temp": 50,
+      "successProb": 0.0
+    },
+    {
+      "temp": 60,
+      "successProb": 0.0
+    },
+    {
+      "temp": 70,
+      "successProb": 0.0
+    },
+    {
+      "temp": 80,
+      "successProb": 0.0
+    },
+    {
+      "temp": 90,
+      "successProb": 0.0
+    },
+    {
+      "temp": 100,
+      "successProb": 0.0
+    },
+    {
+      "temp": 110,
+      "successProb": 0.0
+    },
+    {
+      "temp": 120,
+      "successProb": 0.0
+    },
+    {
+      "temp": 130,
+      "successProb": 0.0
+    },
+    {
+      "temp": 140,
+      "successProb": 0.0
+    },
+    {
+      "temp": 150,
+      "successProb": 0.0
+    },
+    {
+      "temp": 160,
+      "successProb": 0.0
+    },
+    {
+      "temp": 170,
+      "successProb": 0.0
+    },
+    {
+      "temp": 180,
+      "successProb": 0.0
+    }
+  ]
+}

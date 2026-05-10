@@ -1,0 +1,32 @@
+[
+  {
+    "reaction": "Oleic Acid + Methanol Esterification",
+    "A": 2500000,
+    "Ea": 52000,
+    "dataPoints": 4000
+  },
+  {
+    "reaction": "Palmitic Acid + Ethanol Esterification",
+    "A": 18000000,
+    "Ea": 61000,
+    "dataPoints": 4000
+  },
+  {
+    "reaction": "Lauric Acid + Butanol Esterification",
+    "A": 4200000,
+    "Ea": 56000,
+    "dataPoints": 4000
+  },
+  {
+    "reaction": "Stearic Acid + Methanol Esterification",
+    "A": 36000000,
+    "Ea": 68000,
+    "dataPoints": 4000
+  },
+  {
+    "reaction": "Biodiesel Transesterification (Soybean Oil)",
+    "A": 510000,
+    "Ea": 47000,
+    "dataPoints": 4000
+  }
+]
