@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import SectionHeader from '../components/shared/SectionHeader'
 import GlassCard from '../components/shared/GlassCard'
 import NeonButton from '../components/shared/NeonButton'
-import { generateArrheniusData, generateConversionData, REACTIONS } from '../lib/data'
+import { generateArrheniusData, REACTIONS } from '../lib/data'
 import { Beaker, Thermometer, Gauge, Zap, TrendingUp, FlaskConical } from 'lucide-react'
 
 export default function KineticModeling() {
@@ -12,14 +12,53 @@ export default function KineticModeling() {
   const [pressure, setPressure] = useState(5)
   const [residenceTime, setResidenceTime] = useState(120)
   const [isSimulating, setIsSimulating] = useState(false)
+  const [apiResult, setApiResult] = useState<Record<string, unknown> | null>(null)
 
   const rxn = REACTIONS[reactionIdx]
   const arrheniusData = useMemo(() => generateArrheniusData(reactionIdx), [reactionIdx])
-  const conversionData = useMemo(() => generateConversionData(), [])
 
-  const handleSimulate = () => {
+  // Reactive conversion data — recomputes when reaction or temperature changes
+  const conversionData = useMemo(() => {
+    const R = 8.314
+    const data = []
+    for (let t = 0; t <= 300; t += 10) {
+      const k_selected = rxn.A * Math.exp(-rxn.Ea / (R * (temperature + 273.15)))
+      const k_lab = k_selected * 1.15
+      const k_pilot = k_selected * 1.05
+      const k_plant = k_selected * 0.90
+      data.push({
+        time: t,
+        lab: parseFloat((100 * (1 - Math.exp(-k_lab * t * 60))).toFixed(2)),
+        pilot: parseFloat((100 * (1 - Math.exp(-k_pilot * t * 60))).toFixed(2)),
+        plant: parseFloat((100 * (1 - Math.exp(-k_plant * t * 60))).toFixed(2)),
+        heatDissipation: parseFloat((rxn.Ea / 1000 * 2 + temperature * 1.5 * Math.exp(-0.01 * t) * Math.sin(0.05 * t + 1)).toFixed(1)),
+      })
+    }
+    return data
+  }, [reactionIdx, temperature, rxn])
+
+  const handleSimulate = async () => {
     setIsSimulating(true)
-    setTimeout(() => setIsSimulating(false), 2000)
+    try {
+      const res = await fetch('/api/simulate/kinetics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          temperature,
+          pressure,
+          reaction: rxn.name,
+          residenceTime,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setApiResult(data.result)
+      }
+    } catch (err) {
+      console.warn('API not available, using client-side calculations', err)
+    } finally {
+      setIsSimulating(false)
+    }
   }
 
   const R = 8.314
@@ -28,8 +67,8 @@ export default function KineticModeling() {
   const lnK = Math.log(Math.max(rateConstant, 1e-10))
   const predictedConversion = (100 * (1 - Math.exp(-rateConstant * residenceTime * 60))).toFixed(1)
 
-  // Multi-scale comparison using real Arrhenius
-  const scaleComparison = REACTIONS.map(r => {
+  // Multi-scale comparison — reactive to temperature
+  const scaleComparison = useMemo(() => REACTIONS.map(r => {
     const k = r.A * Math.exp(-r.Ea / (R * T_K))
     return {
       reaction: r.shortName,
@@ -38,7 +77,7 @@ export default function KineticModeling() {
       Ea: `${(r.Ea / 1000).toFixed(0)} kJ/mol`,
       A: r.A.toExponential(1),
     }
-  })
+  }), [temperature, T_K, R])
 
   return (
     <main className="pt-20 pb-16 min-h-screen">
@@ -91,30 +130,65 @@ export default function KineticModeling() {
             <GlassCard variant="default" hover={false} className="!p-4">
               <h4 className="text-xs font-mono text-riq-text-dim mb-3">ML PREDICTIONS</h4>
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Rate Constant k</span>
-                  <span className="text-xs font-mono text-riq-cyan">{rateConstant.toExponential(3)} s⁻¹</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">ln(k)</span>
-                  <span className="text-xs font-mono text-riq-cyan">{lnK.toFixed(3)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Predicted Conversion</span>
-                  <span className="text-sm font-bold text-riq-success">{predictedConversion}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Ea</span>
-                  <span className="text-xs font-mono text-riq-gold">{(rxn.Ea / 1000).toFixed(0)} kJ/mol</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">A (Pre-exp)</span>
-                  <span className="text-xs font-mono text-riq-orange">{rxn.A.toExponential(2)} s⁻¹</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-riq-text-dim">Data Points</span>
-                  <span className="text-xs font-bold text-riq-success">4,000 per reaction</span>
-                </div>
+                {apiResult ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Rate Constant k</span>
+                      <span className="text-xs font-mono text-riq-cyan">{apiResult.rateConstant as string} s⁻¹</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">ln(k)</span>
+                      <span className="text-xs font-mono text-riq-cyan">{apiResult.lnK as string}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Predicted Conversion</span>
+                      <span className="text-sm font-bold text-riq-success">{apiResult.predictedConversion as number}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Scale-Up Success</span>
+                      <span className="text-xs font-bold text-riq-success">{apiResult.scaleUpSuccessRate as number}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Ea</span>
+                      <span className="text-xs font-mono text-riq-gold">{(Number(apiResult.activationEnergy) / 1000).toFixed(0)} kJ/mol</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">A (Pre-exp)</span>
+                      <span className="text-xs font-mono text-riq-orange">{Number(apiResult.preExponentialFactor).toExponential(2)} s⁻¹</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Data Points</span>
+                      <span className="text-xs font-bold text-riq-success">20,000 Total</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Rate Constant k</span>
+                      <span className="text-xs font-mono text-riq-cyan">{rateConstant.toExponential(3)} s⁻¹</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">ln(k)</span>
+                      <span className="text-xs font-mono text-riq-cyan">{lnK.toFixed(3)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Predicted Conversion</span>
+                      <span className="text-sm font-bold text-riq-success">{predictedConversion}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Ea</span>
+                      <span className="text-xs font-mono text-riq-gold">{(rxn.Ea / 1000).toFixed(0)} kJ/mol</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">A (Pre-exp)</span>
+                      <span className="text-xs font-mono text-riq-orange">{rxn.A.toExponential(2)} s⁻¹</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-riq-text-dim">Data Points</span>
+                      <span className="text-xs font-bold text-riq-success">4,000 per reaction</span>
+                    </div>
+                  </>
+                )}
               </div>
             </GlassCard>
           </div>
