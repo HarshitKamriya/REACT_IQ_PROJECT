@@ -44,7 +44,8 @@ def load_all_reactions():
     sheets = summary["Reaction"].tolist()
     all_data = []
     for sheet in sheets:
-        safe_name = sheet.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
+        sheet_name = sheet[:31] # Match Excel's 31-char limit used during conversion
+        safe_name = sheet_name.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
         csv_path = os.path.join(DATA_DIR, f"{safe_name}.csv")
         df = pd.read_csv(csv_path)
         df["Reaction"] = sheet

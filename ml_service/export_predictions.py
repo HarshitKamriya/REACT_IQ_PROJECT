@@ -100,7 +100,8 @@ def export_dataset_stats():
     stats = {}
 
     for sheet in sheets:
-        safe_name = sheet.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
+        sheet_name = sheet[:31]
+        safe_name = sheet_name.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
         csv_path = os.path.join(DATA_DIR, f"{safe_name}.csv")
         df = pd.read_csv(csv_path)
         stats[sheet] = {
