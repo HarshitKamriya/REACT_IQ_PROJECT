@@ -54,7 +54,7 @@ function HazardRadar() {
       // Sweep
       angleRef.current += 0.02
       const sweepAngle = angleRef.current % (Math.PI * 2)
-      const grad = ctx.createConicalGradient?.(sweepAngle, cx, cy) 
+      const grad = (ctx as any).createConicGradient?.(sweepAngle, cx, cy) 
       if (!grad) {
         // Fallback: draw sweep line
         ctx.beginPath()

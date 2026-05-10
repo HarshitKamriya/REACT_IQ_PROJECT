@@ -1,7 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Float, Text } from '@react-three/drei'
-import { motion } from 'framer-motion'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import SectionHeader from '../components/shared/SectionHeader'
 import GlassCard from '../components/shared/GlassCard'

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, LineChart, Line, Legend, AreaChart, Area } from 'recharts'
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Line, Legend, AreaChart, Area } from 'recharts'
 import SectionHeader from '../components/shared/SectionHeader'
 import GlassCard from '../components/shared/GlassCard'
 import NeonButton from '../components/shared/NeonButton'
