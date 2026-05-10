@@ -17,17 +17,21 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-XLSX_PATH = os.path.join(DATA_DIR, "oleochemical_arrhenius_20000_dataset.xlsx")
+XLSXDATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
 def load_all_reactions():
-    """Load and combine all 5 reaction sheets into one DataFrame."""
-    xl = pd.ExcelFile(XLSX_PATH)
-    sheets = [s for s in xl.sheet_names if s != "Reaction Summary"]
-
+    """Load all 5 sheets from the CSV datasets and combine them."""
+    summary_path = os.path.join(DATA_DIR, "reaction_summary.csv")
+    summary = pd.read_csv(summary_path)
+    sheets = summary["Reaction"].tolist()
+    
     all_data = []
+
     for sheet in sheets:
-        df = pd.read_excel(xl, sheet_name=sheet)
+        safe_name = sheet.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
+        csv_path = os.path.join(DATA_DIR, f"{safe_name}.csv")
+        df = pd.read_csv(csv_path)
         df["Reaction"] = sheet
         all_data.append(df)
 

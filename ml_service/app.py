@@ -31,7 +31,7 @@ st.markdown("""
 BASE_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MODEL_DIR = os.path.join(BASE_DIR, "models")
-XLSX_PATH = os.path.join(DATA_DIR, "oleochemical_arrhenius_20000_dataset.xlsx")
+SUMMARY_PATH = os.path.join(DATA_DIR, "reaction_summary.csv")
 
 
 def load_model(name):
@@ -40,11 +40,13 @@ def load_model(name):
 
 
 def load_all_reactions():
-    xl = pd.ExcelFile(XLSX_PATH)
-    sheets = [s for s in xl.sheet_names if s != "Reaction Summary"]
+    summary = pd.read_csv(SUMMARY_PATH)
+    sheets = summary["Reaction"].tolist()
     all_data = []
     for sheet in sheets:
-        df = pd.read_excel(xl, sheet_name=sheet)
+        safe_name = sheet.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
+        csv_path = os.path.join(DATA_DIR, f"{safe_name}.csv")
+        df = pd.read_csv(csv_path)
         df["Reaction"] = sheet
         all_data.append(df)
     return pd.concat(all_data, ignore_index=True)
@@ -104,7 +106,7 @@ if page == "Dashboard":
 
     with col2:
         st.subheader("Reaction Types")
-        summary = pd.read_excel(XLSX_PATH, sheet_name="Reaction Summary") if os.path.exists(XLSX_PATH) else None
+        summary = pd.read_csv(SUMMARY_PATH) if os.path.exists(SUMMARY_PATH) else None
         if summary is not None:
             st.dataframe(summary, use_container_width=True, hide_index=True)
 
@@ -279,7 +281,7 @@ elif page == "Arrhenius Explorer":
     st.markdown("Visualize real Arrhenius kinetics across 5 oleochemical reactions")
     st.divider()
 
-    if not os.path.exists(XLSX_PATH):
+    if not os.path.exists(SUMMARY_PATH):
         st.error("Dataset not found.")
         st.stop()
 
@@ -321,13 +323,13 @@ elif page == "Data Explorer":
     st.markdown("# Raw Data Explorer")
     st.divider()
 
-    if not os.path.exists(XLSX_PATH):
+    if not os.path.exists(SUMMARY_PATH):
         st.error("Dataset not found.")
         st.stop()
 
-    xl = pd.ExcelFile(XLSX_PATH)
-    sheet = st.selectbox("Sheet", xl.sheet_names)
-    df = pd.read_excel(xl, sheet_name=sheet)
+    csv_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.csv')]
+    sheet = st.selectbox("File", csv_files)
+    df = pd.read_csv(os.path.join(DATA_DIR, sheet))
 
     st.markdown(f"**{len(df)}** rows x **{len(df.columns)}** columns")
     st.dataframe(df, use_container_width=True, height=400)
@@ -348,11 +350,11 @@ elif page == "Train Models":
     st.markdown("Train all models on real oleochemical dataset")
     st.divider()
 
-    has_data = os.path.exists(XLSX_PATH)
+    has_data = os.path.exists(SUMMARY_PATH)
     st.markdown(f"**Dataset**: {'Found (20,000 rows)' if has_data else 'NOT FOUND'}")
 
     if not has_data:
-        st.error("Place `oleochemical_arrhenius_20000_dataset.xlsx` in `ml_service/data/`")
+        st.error("Place your CSV files in `ml_service/data/`")
         st.stop()
 
     if st.button("Train All Models on Real Data", type="primary"):

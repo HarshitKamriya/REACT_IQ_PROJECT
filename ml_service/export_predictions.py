@@ -14,12 +14,13 @@ MODEL_DIR = os.path.join(BASE_DIR, "models")
 EXPORT_DIR = os.path.join(os.path.dirname(BASE_DIR), "api", "_ml_data")
 os.makedirs(EXPORT_DIR, exist_ok=True)
 
-DATA_PATH = os.path.join(BASE_DIR, "data", "oleochemical_arrhenius_20000_dataset.xlsx")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+SUMMARY_PATH = os.path.join(DATA_DIR, "reaction_summary.csv")
 
 
 def export_arrhenius_params():
     """Export real Arrhenius parameters from the dataset summary."""
-    summary = pd.read_excel(DATA_PATH, sheet_name="Reaction Summary")
+    summary = pd.read_csv(SUMMARY_PATH)
     params = []
     for _, row in summary.iterrows():
         params.append({
@@ -94,12 +95,14 @@ def export_scaleup_predictions():
 
 def export_dataset_stats():
     """Export dataset statistics for the frontend."""
-    xl = pd.ExcelFile(DATA_PATH)
-    sheets = [s for s in xl.sheet_names if s != "Reaction Summary"]
+    summary = pd.read_csv(SUMMARY_PATH)
+    sheets = summary["Reaction"].tolist()
     stats = {}
 
     for sheet in sheets:
-        df = pd.read_excel(xl, sheet_name=sheet)
+        safe_name = sheet.replace(" ", "_").replace("+", "plus").replace("(", "").replace(")", "").lower()
+        csv_path = os.path.join(DATA_DIR, f"{safe_name}.csv")
+        df = pd.read_csv(csv_path)
         stats[sheet] = {
             "count": len(df),
             "tempRange": [round(df["Temperature (C)"].min(), 1), round(df["Temperature (C)"].max(), 1)],
